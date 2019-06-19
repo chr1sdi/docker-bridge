@@ -1,0 +1,64 @@
+version: "2"
+services:
+  iperf3-server:
+    container_name: iperf3-server
+    image: networkstatic/iperf3
+    ports:
+      - "5201:5201"
+    command: ["-s"]
+    tty: true
+    networks:
+      i_serv:
+        ipv4_address: 192.168.1.10
+
+  dopler:
+    container_name: dopler
+    build:
+      context: .
+      dockerfile: Dockerfile_bridge
+    cap_add:
+      - ALL
+    networks:
+      i_serv:
+        ipv4_address: 192.168.1.5
+      i_client:
+        ipv4_address: 192.168.128.6
+
+  iperf3-client:
+    container_name: iperf3-client
+    image: networkstatic/iperf3
+    command: ["-c", "192.168.1.10"]
+    tty: true
+    networks:
+      i_serv:
+        ipv4_address: 192.168.1.12
+    depends_on:
+      - "iperf3-server"
+
+
+  dopler-client:
+    container_name: dopler-client
+    build:
+      context: .
+      dockerfile: dockerfile
+    cap_add:
+      - ALL
+    networks:
+      i_client:
+        ipv4_address: 192.168.128.12
+
+networks:
+  i_serv:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 192.168.1.0/24
+         gateway: 192.168.1.1
+
+  i_client:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 192.168.128.0/24
+         gateway: 192.168.128.1
+

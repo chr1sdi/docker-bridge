@@ -1,0 +1,14 @@
+FROM ubuntu
+
+RUN apt-get update
+RUN apt-get upgrade -y
+RUN apt-get install -y curl vim bridge-utils net-tools iputils-ping iproute2
+
+USER root
+
+RUN brctl addbr br0
+RUN brctl addif br0 eth0 eth1
+RUN ip link set dev br0 up
+
+CMD tail -f /dev/null
+
